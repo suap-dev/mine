@@ -1,6 +1,7 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
 use ggez::{
+    glam::vec2,
     graphics::{self, Color},
     Context, GameResult,
 };
@@ -13,17 +14,33 @@ fn main() {
             .expect("Failed to create ggex context.")
     };
 
-    ggez::event::run(context, event_loop, Thing {});
+    let thing = Thing {
+        circle: graphics::Mesh::new_circle(
+            &context,
+            graphics::DrawMode::fill(),
+            vec2(0.0, 0.0),
+            50.0,
+            0.5,
+            Color::WHITE,
+        ).unwrap(),
+    };
+
+    ggez::event::run(context, event_loop, thing);
 }
 
-struct Thing {}
+struct Thing {
+    circle: graphics::Mesh,
+
+}
 impl ggez::event::EventHandler for Thing {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
-        let canvas = graphics::Canvas::from_frame(ctx, Color::BLACK);        
+        let mut canvas = graphics::Canvas::from_frame(ctx, Color::BLACK);
+
+        canvas.draw(&self.circle, vec2(100.0, 100.0));
 
         canvas.finish(ctx)
     }
