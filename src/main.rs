@@ -7,8 +7,18 @@ use thing::Thing;
 
 fn main() -> GameResult {
     let (context, event_loop) = {
-        let context_builder = ggez::ContextBuilder::new("Thing", "suap");
-        context_builder.build()?
+        let window_setup = ggez::conf::WindowSetup::default()
+            .title("Thing")
+            .vsync(false);
+
+        let window_mode = ggez::conf::WindowMode::default()
+            .dimensions(1920.0, 1080.0)
+            .maximized(false);
+
+        ggez::ContextBuilder::new("Thing", "suap")
+            .window_setup(window_setup)
+            .window_mode(window_mode)
+            .build()?
     };
 
     let thing = Thing::new(&context)?;
