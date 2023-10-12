@@ -1,5 +1,7 @@
+use std::f32::consts::TAU;
+
 use ggez::{
-    glam::{Vec2, Vec3, Vec3Swizzles},
+    glam::{vec2, Vec2, Vec3, Vec3Swizzles},
     graphics::{Color, DrawMode, Mesh},
     Context, GameResult,
 };
@@ -11,12 +13,35 @@ pub struct Triangle {
     projection: Mesh,
 }
 impl Triangle {
-    pub fn new(ctx: &Context, v1: Vec3, v2: Vec3, v3: Vec3) -> GameResult<Self> {
-        let origin = (v1 + v2 + v3) / 3.0;
+    pub fn from_screen_coords(ctx: &Context, origin: Vec3, v1: Vec3, v2: Vec3, v3: Vec3) -> GameResult<Self> {
+        // let origin = (v1 + v2 + v3) / 3.0;
         let v1 = v1 - origin;
         let v2 = v2 - origin;
         let v3 = v3 - origin;
         let vertices = [v1, v2, v3];
+
+        let projection = Self::generate_projection(ctx, &vertices)?;
+
+        Ok(Self {
+            vertices,
+            vertices_changed: false,
+            origin,
+            projection,
+        })
+    }
+
+    pub fn equilateral(ctx: &Context, origin: Vec3, height: f32) -> GameResult<Self> {
+        let rotator_ish = Vec2::from_angle(TAU / 3.0);
+
+        let v1 = vec2(0.0, 1.0) * height * 2.0 / 3.0;
+        let v2 = rotator_ish.rotate(v1);
+        let v3 = rotator_ish.rotate(v2);
+
+        let vertices = [
+            v1.extend(0.0),
+            v2.extend(0.0),
+            v3.extend(0.0),
+        ];
 
         let projection = Self::generate_projection(ctx, &vertices)?;
 

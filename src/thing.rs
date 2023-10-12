@@ -1,15 +1,16 @@
-use std::f32::consts::PI;
+use std::f32::consts::TAU;
 
 use ggez::{
     glam::{vec2, vec3, Vec2},
     graphics::{self, Color},
+    winit::event::VirtualKeyCode,
     Context, GameResult,
 };
 
 use crate::triangle3::Triangle;
 
 const MOVE_SPEED: f32 = 100.0;
-const ROTATION_SPEED: f32 = PI / 3.0;
+const ROTATION_SPEED: f32 = TAU / 12.0;
 #[derive(Default)]
 struct DirectionInput {
     // TODO: try to do this with X and Y axis, or UP and RIGHT axis.
@@ -18,20 +19,25 @@ struct DirectionInput {
     left: f32,
     right: f32,
 }
+struct Rotation {
+    pitch: f32,
+    yaw: f32,
+    roll: f32,
+}
 
 pub struct Thing {
     triangle: Triangle,
-    // mesh_position: Vec2,
     direction_input: DirectionInput,
 }
 impl Thing {
     pub fn new(ctx: &Context) -> GameResult<Self> {
-        let triangle = Triangle::new(
-            ctx,
-            vec3(300.0, 300.0, 300.0),
-            vec3(250.0, 150.0, -100.0),
-            vec3(1000.0, 1000.0, 0.0),
-        )?;
+        let screen_size = ctx.gfx.window().inner_size();
+
+        let height = screen_size.height as f32;
+        let width = screen_size.width as f32;
+
+        let triangle =
+            Triangle::equilateral(ctx, vec3(width / 2.0, height / 2.0, 0.0), height / 3.0)?;
 
         Ok(Self {
             triangle,
@@ -52,7 +58,6 @@ impl ggez::event::EventHandler for Thing {
         let dt32 = ctx.time.delta().as_secs_f32();
         let movement_vector = self.input_vector().extend(0.0) * MOVE_SPEED * dt32;
         self.triangle.translate(movement_vector);
-        self.triangle.rotate_y(ROTATION_SPEED * dt32);
         Ok(())
     }
 
@@ -61,10 +66,7 @@ impl ggez::event::EventHandler for Thing {
 
         let origin = self.triangle.get_origin().truncate();
 
-        canvas.draw(
-            self.triangle.get_projection(ctx)?,
-            origin,
-        );
+        canvas.draw(self.triangle.get_projection(ctx)?, origin);
 
         canvas.finish(ctx)
     }
@@ -81,6 +83,13 @@ impl ggez::event::EventHandler for Thing {
             30 => self.direction_input.left = 1.0,  // A(QWERTY) or Q(AZERTY)
             32 => self.direction_input.right = 1.0, // D
 
+            _ => (),
+        }
+
+        match input.keycode {
+            Some(VirtualKeyCode::Z) => println!("z"),
+            Some(VirtualKeyCode::X) => println!("x"),
+            Some(VirtualKeyCode::C) => println!("c"),
             _ => (),
         }
 
