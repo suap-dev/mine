@@ -58,42 +58,32 @@ impl Triangle {
     }
 
     // TODO: this is temporary, let's do a rotator and a proper pitch/yaw/roll, also matrices
-    pub fn rotate_x(angle: f32) {}
-    pub fn rotate_y(&mut self, angle: f32) {
-        let mut v1 = self.vertices[0];
-        let mut v2 = self.vertices[1];
-        let mut v3 = self.vertices[2];
-
+    pub fn rotate_x(&mut self, angle: f32) {
         let rotator_ish = Vec2::from_angle(angle);
-
-        let v1_rotated = rotator_ish.rotate(v1.xz());
-        v1.x = v1_rotated.x;
-        v1.z = v1_rotated.y;
-
-        
-        let v2_rotated = rotator_ish.rotate(v2.xz());
-        v2.x = v2_rotated.x;
-        v2.z = v2_rotated.y;
-
-        let v3_rotated = rotator_ish.rotate(v3.xz());
-        v3.x = v3_rotated.x;
-        v3.z = v3_rotated.y;
-
-        self.vertices = [v1, v2, v3];
+        self.vertices.iter_mut().for_each(|v| {
+            let v_rotated = rotator_ish.rotate(v.yz());
+            v.y = v_rotated.x;
+            v.z = v_rotated.y;
+        });
+        self.vertices_changed = true;
+    }
+    pub fn rotate_y(&mut self, angle: f32) {
+        let rotator_ish = Vec2::from_angle(angle);
+        self.vertices.iter_mut().for_each(|v| {
+            let v_rotated = rotator_ish.rotate(v.xz());
+            v.x = v_rotated.x;
+            v.z = v_rotated.y;
+        });
         self.vertices_changed = true;
     }
 
     pub fn rotate_z(&mut self, angle: f32) {
-        let mut v1 = self.vertices[0];
-        let mut v2 = self.vertices[1];
-        let mut v3 = self.vertices[2];
-
         let rotator_ish = Vec2::from_angle(angle);
-        v1 = rotator_ish.rotate(v1.xy()).extend(v1.z);
-        v2 = rotator_ish.rotate(v2.xy()).extend(v2.z);
-        v3 = rotator_ish.rotate(v3.xy()).extend(v3.z);
-
-        self.vertices = [v1, v2, v3];
+        self.vertices.iter_mut().for_each(|v| {
+            let v_rotated = rotator_ish.rotate(v.xy());
+            v.x = v_rotated.x;
+            v.y = v_rotated.y;
+        });
         self.vertices_changed = true;
     }
 }
