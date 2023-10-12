@@ -1,14 +1,11 @@
 use ggez::{
-    glam::{vec2, Vec2},
+    glam::{vec2, vec3, Vec2},
     graphics::{self, Color},
     Context, GameResult,
 };
 
-pub struct Thing {
-    circle: graphics::Mesh,
-    circle_position: Vec2,
-    direction_input: DirectionInput,
-}
+use crate::triangle3::Triangle;
+
 const MOVE_SPEED: f32 = 100.0;
 #[derive(Default)]
 struct DirectionInput {
@@ -18,25 +15,24 @@ struct DirectionInput {
     left: f32,
     right: f32,
 }
+
+pub struct Thing {
+    triangle: Triangle,
+    // mesh_position: Vec2,
+    direction_input: DirectionInput,
+}
 impl Thing {
     pub fn new(ctx: &Context) -> GameResult<Self> {
-        let circle = graphics::Mesh::new_circle(
+        let triangle = Triangle::new(
             ctx,
-            graphics::DrawMode::fill(),
-            vec2(0.0, 0.0),
-            50.0,
-            0.2,
-            Color::WHITE,
+            vec3(300.0, 300.0, 300.0),
+            vec3(250.0, 150.0, -100.0),
+            vec3(1000.0, 1000.0, 0.0),
         )?;
 
-        let circle_position = {
-            let (width, height) = ctx.gfx.drawable_size();
-            vec2(width / 2.0, height / 2.0)
-        };
-
         Ok(Self {
-            circle,
-            circle_position,
+            triangle,
+            // mesh_position: circle_position,
             direction_input: DirectionInput::default(),
         })
     }
@@ -50,15 +46,15 @@ impl Thing {
 }
 impl ggez::event::EventHandler for Thing {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        // TODO: diagonaly it's gonna go too fast - fix it
-        self.circle_position += self.input_vector() * MOVE_SPEED * ctx.time.delta().as_secs_f32();
+        // self.mesh_position += self.input_vector() * MOVE_SPEED * ctx.time.delta().as_secs_f32();
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, Color::BLACK);
 
-        canvas.draw(&self.circle, self.circle_position);
+        // canvas.draw(&self.mesh, self.mesh_position);
+        canvas.draw(self.triangle.get_projection(), vec2(0.0, 0.0));
 
         canvas.finish(ctx)
     }

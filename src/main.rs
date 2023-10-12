@@ -1,6 +1,7 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
 mod thing;
+mod triangle3;
 
 use ggez::GameResult;
 use thing::Thing;
