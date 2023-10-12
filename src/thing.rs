@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use ggez::{
     glam::{vec2, vec3, Vec2},
     graphics::{self, Color},
@@ -7,6 +9,7 @@ use ggez::{
 use crate::triangle3::Triangle;
 
 const MOVE_SPEED: f32 = 100.0;
+const ROTATION_SPEED: f32 = PI / 3.0;
 #[derive(Default)]
 struct DirectionInput {
     // TODO: try to do this with X and Y axis, or UP and RIGHT axis.
@@ -46,15 +49,22 @@ impl Thing {
 }
 impl ggez::event::EventHandler for Thing {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        // self.mesh_position += self.input_vector() * MOVE_SPEED * ctx.time.delta().as_secs_f32();
+        let dt32 = ctx.time.delta().as_secs_f32();
+        let movement_vector = self.input_vector().extend(0.0) * MOVE_SPEED * dt32;
+        self.triangle.translate(movement_vector);
+        self.triangle.rotate_y(ROTATION_SPEED * dt32);
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, Color::BLACK);
 
-        // canvas.draw(&self.mesh, self.mesh_position);
-        canvas.draw(self.triangle.get_projection(), vec2(0.0, 0.0));
+        let origin = self.triangle.get_origin().truncate();
+
+        canvas.draw(
+            self.triangle.get_projection(ctx)?,
+            origin,
+        );
 
         canvas.finish(ctx)
     }
