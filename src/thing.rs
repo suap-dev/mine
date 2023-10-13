@@ -42,10 +42,11 @@ impl Thing {
         let v2 = vec3(-1.0, -1.0, 1.0) * height / 4.0;
         let v3 = vec3(-1.0, 1.0, -1.0) * height / 4.0;
         let v4 = vec3(1.0, -1.0, -1.0) * height / 4.0;
-        shape.push_triangle(ctx, [v1, v2, v3])?;
+        shape.push_triangle(ctx, [v1, v2, v4])?;
+        shape.push_triangle(ctx, [v1, v3, v2])?;
         shape.push_triangle(ctx, [v2, v3, v4])?;
-        shape.push_triangle(ctx, [v3, v4, v1])?;
-        shape.push_triangle(ctx, [v4, v1, v2])?;
+        shape.push_triangle(ctx, [v1, v4, v3])?;
+        
 
         Ok(Self {
             shape,
@@ -88,9 +89,9 @@ impl ggez::event::EventHandler for Thing {
         let origin = self.shape.get_origin().truncate();
 
         for triangle in &mut self.shape.triangles {
-            // if triangle.is_visible() {
-            canvas.draw(triangle.get_projection(ctx)?, origin);
-            // }
+            if triangle.is_visible() {
+                canvas.draw(triangle.get_projection(ctx)?, origin);
+            }
         }
 
         canvas.finish(ctx)

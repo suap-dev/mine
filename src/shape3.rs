@@ -19,12 +19,8 @@ impl Shape {
     }
 
     pub fn push_triangle(&mut self, ctx: &Context, vertices: [Vec3; 3]) -> GameResult {
-        let mut triangle = Triangle::new(ctx, self.origin, vertices)?;
-        // TODO: fix the rotation/determinant/vertex-order...
-        // so that we can actualy delete the next line
-        triangle.update_projection_if_not_visible = true;
-
-        self.triangles.push(triangle);
+        self.triangles
+            .push(Triangle::new(ctx, self.origin, vertices)?);
         Ok(())
     }
 
