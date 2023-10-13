@@ -7,7 +7,7 @@ use ggez::{
     Context, GameResult,
 };
 
-use crate::triangle3::Triangle;
+use crate::shape3::Shape;
 
 #[derive(Default)]
 struct Direction {
@@ -26,7 +26,7 @@ struct Rotation {
 }
 
 pub struct Thing {
-    triangle: Triangle,
+    shape: Shape,
     direction_input: Direction,
     rotation_input: Rotation,
 }
@@ -34,16 +34,21 @@ impl Thing {
     pub fn new(ctx: &Context) -> GameResult<Self> {
         let screen_size = ctx.gfx.window().inner_size();
 
-        let height = screen_size.height as f32;
-        let width = screen_size.width as f32;
+        #[allow(clippy::cast_precision_loss)]
+        let (height, width) = (screen_size.height as f32, screen_size.width as f32);
 
-        let mut triangle =
-            Triangle::equilateral(ctx, vec3(width / 2.0, height / 2.0, 0.0), height / 3.0)?;
-        triangle.update_projection_if_not_visible = true;
+        let mut shape = Shape::empty(vec3(width / 2.0, height / 2.0, 0.0));
+        let v1 = vec3(1.0, 1.0, 1.0) * height / 4.0;
+        let v2 = vec3(-1.0, -1.0, 1.0) * height / 4.0;
+        let v3 = vec3(-1.0, 1.0, -1.0) * height / 4.0;
+        let v4 = vec3(1.0, -1.0, -1.0) * height / 4.0;
+        shape.push_triangle(ctx, [v1, v2, v3])?;
+        shape.push_triangle(ctx, [v2, v3, v4])?;
+        shape.push_triangle(ctx, [v3, v4, v1])?;
+        shape.push_triangle(ctx, [v4, v1, v2])?;
 
         Ok(Self {
-            triangle,
-            // mesh_position: circle_position,
+            shape,
             direction_input: Direction::default(),
             rotation_input: Rotation::default(),
         })
@@ -56,6 +61,7 @@ impl Thing {
         vec2(x, y).clamp_length(0.0, 1.0)
     }
 }
+
 impl ggez::event::EventHandler for Thing {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         const MOVE_SPEED: f32 = 500.0;
@@ -64,13 +70,13 @@ impl ggez::event::EventHandler for Thing {
         let dt32 = ctx.time.delta().as_secs_f32();
 
         let movement_vector = self.input_vector().extend(0.0) * MOVE_SPEED * dt32;
-        self.triangle.translate(movement_vector);
+        self.shape.translate(movement_vector);
 
-        self.triangle
+        self.shape
             .add_pitch(ROTATION_SPEED * dt32 * self.rotation_input.pitch);
-        self.triangle
+        self.shape
             .add_roll(ROTATION_SPEED * dt32 * self.rotation_input.roll);
-        self.triangle
+        self.shape
             .add_yaw(ROTATION_SPEED * dt32 * self.rotation_input.yaw);
 
         Ok(())
@@ -79,11 +85,14 @@ impl ggez::event::EventHandler for Thing {
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, Color::BLACK);
 
-        let origin = self.triangle.get_origin().truncate();
+        let origin = self.shape.get_origin().truncate();
 
-        if self.triangle.is_visible() {
-            canvas.draw(self.triangle.get_projection(ctx)?, origin);
+        for triangle in &mut self.shape.triangles {
+            // if triangle.is_visible() {
+            canvas.draw(triangle.get_projection(ctx)?, origin);
+            // }
         }
+
         canvas.finish(ctx)
     }
 
