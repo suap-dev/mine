@@ -58,6 +58,7 @@ impl ggez::event::EventHandler for Thing {
         let dt32 = ctx.time.delta().as_secs_f32();
         let movement_vector = self.input_vector().extend(0.0) * MOVE_SPEED * dt32;
         self.triangle.translate(movement_vector);
+        self.triangle.rotate_x(ROTATION_SPEED * dt32);
         Ok(())
     }
 
@@ -66,8 +67,9 @@ impl ggez::event::EventHandler for Thing {
 
         let origin = self.triangle.get_origin().truncate();
 
-        canvas.draw(self.triangle.get_projection(ctx)?, origin);
-
+        if self.triangle.is_visible() {
+            canvas.draw(self.triangle.get_projection(ctx)?, origin);
+        }
         canvas.finish(ctx)
     }
 
