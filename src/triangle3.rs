@@ -17,7 +17,7 @@ impl Triangle {
     pub fn new(vertices: [Vec3; 3]) -> Self {
         Self {
             vertices,
-            vertices_changed: false,
+            vertices_changed: true,
             projection: None,
             visible: Self::determinant(&vertices) > 0.0,
             update_projection_if_not_visible: false,
@@ -113,9 +113,22 @@ impl Triangle {
     fn debug_projection(ctx: &Context, vertices: &[Vec3; 3]) -> GameResult<Mesh> {
         Mesh::new_polygon(
             ctx,
-            DrawMode::stroke(4.0),
+            DrawMode::stroke(2.0),
             &Self::truncate(vertices),
             Color::WHITE,
         )
+    }
+
+    fn shaded_projection(ctx: &Context, vertices: &[Vec3; 3]) -> GameResult<Mesh> {
+        Mesh::new_polygon(
+            ctx,
+            DrawMode::fill(),
+            &Self::truncate(vertices),
+            Color::WHITE,
+        )
+    }
+
+    fn normal(&self) {
+        // let v1 = self.vertices[0
     }
 }
