@@ -1,7 +1,7 @@
 use std::f32::consts::TAU;
 
 use ggez::{
-    glam::{vec2, vec3, Vec2},
+    glam::{vec2, vec3, Vec2, Vec3},
     graphics::{self, Color},
     winit::event::VirtualKeyCode,
     Context, GameResult,
@@ -27,6 +27,7 @@ struct Rotation {
 
 pub struct Thing {
     shape: Shape,
+    light_direction: Vec3,
     direction_input: Direction,
     rotation_input: Rotation,
 }
@@ -47,8 +48,11 @@ impl Thing {
         shape.push_triangle([v2, v3, v4]);
         shape.push_triangle([v1, v4, v3]);
 
+        let light_direction: Vec3 = vec3(1.0, 1.0, 0.0).normalize();
+
         Self {
             shape,
+            light_direction,
             direction_input: Direction::default(),
             rotation_input: Rotation::default(),
         }
@@ -90,7 +94,7 @@ impl ggez::event::EventHandler for Thing {
         for triangle in &mut self.shape.triangles {
             if triangle.is_visible() {
                 // if let triangle = &triangle.get_projection(ctx)?;
-                if let Some(triangle) = triangle.get_projection(ctx)? {
+                if let Some(triangle) = triangle.get_projection(ctx, false, self.light_direction)? {
                     canvas.draw(triangle, origin);
                 }
             }

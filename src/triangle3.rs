@@ -1,4 +1,4 @@
-use std::f32::consts::TAU;
+use std::f32::consts::{PI, TAU};
 
 use ggez::{
     glam::{vec2, Vec2, Vec3, Vec3Swizzles},
@@ -46,9 +46,18 @@ impl Triangle {
         Self::new(vertices)
     }
 
-    pub fn get_projection(&mut self, ctx: &Context) -> GameResult<&Option<Mesh>> {
+    pub fn get_projection(
+        &mut self,
+        ctx: &Context,
+        debug: bool,
+        light_direction: Vec3,
+    ) -> GameResult<&Option<Mesh>> {
         if (self.update_projection_if_not_visible || self.visible) && self.vertices_changed {
-            self.projection = Some(Self::debug_projection(ctx, &self.vertices)?);
+            self.projection = Some(if debug {
+                Self::debug_projection(ctx, &self.vertices)?
+            } else {
+                Self::shaded_projection(ctx, &self.vertices, light_direction)?
+            });
             self.vertices_changed = false;
         }
         Ok(&self.projection)
@@ -119,16 +128,29 @@ impl Triangle {
         )
     }
 
-    fn shaded_projection(ctx: &Context, vertices: &[Vec3; 3]) -> GameResult<Mesh> {
+    fn shaded_projection(
+        ctx: &Context,
+        vertices: &[Vec3; 3],
+        light_direction: Vec3,
+    ) -> GameResult<Mesh> {
+        // TODO: getting angle is inefficient?
+        // use a aprox trig fction
+        let angle = Self::normal(vertices).angle_between(light_direction);
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let intensity = (255.0 * angle / PI) as u8;
+
         Mesh::new_polygon(
             ctx,
             DrawMode::fill(),
             &Self::truncate(vertices),
-            Color::WHITE,
+            Color::from_rgb(intensity, intensity, intensity),
         )
     }
 
-    fn normal(&self) {
-        // let v1 = self.vertices[0
+    fn normal(vertices: &[Vec3; 3]) -> Vec3 {
+        let v1 = vertices[1] - vertices[0];
+        let v2 = vertices[2] - vertices[0];
+
+        v1.cross(v2).normalize()
     }
 }
