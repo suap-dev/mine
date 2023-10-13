@@ -1,4 +1,4 @@
-use ggez::{glam::Vec3, Context, GameResult};
+use ggez::glam::Vec3;
 
 use crate::triangle3::Triangle;
 
@@ -18,10 +18,8 @@ impl Shape {
         self.origin
     }
 
-    pub fn push_triangle(&mut self, ctx: &Context, vertices: [Vec3; 3]) -> GameResult {
-        self.triangles
-            .push(Triangle::new(ctx, vertices)?);
-        Ok(())
+    pub fn push_triangle(&mut self, vertices: [Vec3; 3]) {
+        self.triangles.push(Triangle::new(vertices));
     }
 
     pub fn add_pitch(&mut self, angle: f32) {

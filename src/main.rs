@@ -1,8 +1,8 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
+mod shape3;
 mod thing;
 mod triangle3;
-mod shape3;
 
 use ggez::GameResult;
 use thing::Thing;
@@ -23,7 +23,7 @@ fn main() -> GameResult {
             .build()?
     };
 
-    let thing = Thing::new(&context)?;
+    let thing = Thing::new(&context);
 
     ggez::event::run(context, event_loop, thing);
 }

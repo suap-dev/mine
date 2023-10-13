@@ -9,40 +9,32 @@ use ggez::{
 pub struct Triangle {
     vertices: [Vec3; 3],
     vertices_changed: bool,
-    projection: Mesh,
+    projection: Option<Mesh>,
     visible: bool,
     pub update_projection_if_not_visible: bool,
 }
 impl Triangle {
-    pub fn new(ctx: &Context, vertices: [Vec3; 3]) -> GameResult<Self> {
-        let projection = Self::default_projection(ctx, &vertices)?;
-
-        Ok(Self {
+    pub fn new(vertices: [Vec3; 3]) -> Self {
+        Self {
             vertices,
             vertices_changed: false,
-            projection,
+            projection: None,
             visible: Self::determinant(&vertices) > 0.0,
             update_projection_if_not_visible: false,
-        })
+        }
     }
 
-    pub fn from_screen_coords(
-        ctx: &Context,
-        origin: Vec3,
-        v1: Vec3,
-        v2: Vec3,
-        v3: Vec3,
-    ) -> GameResult<Self> {
+    pub fn from_screen_coords(origin: Vec3, v1: Vec3, v2: Vec3, v3: Vec3) -> Self {
         let v1 = v1 - origin;
         let v2 = v2 - origin;
         let v3 = v3 - origin;
 
         let vertices = [v1, v2, v3];
 
-        Self::new(ctx, vertices)
+        Self::new(vertices)
     }
 
-    pub fn equilateral(ctx: &Context, height: f32) -> GameResult<Self> {
+    pub fn equilateral(height: f32) -> Self {
         let rotator_ish = Vec2::from_angle(TAU / 3.0);
 
         let v1 = vec2(0.0, 1.0) * height * 2.0 / 3.0;
@@ -51,12 +43,12 @@ impl Triangle {
 
         let vertices = [v1.extend(0.0), v2.extend(0.0), v3.extend(0.0)];
 
-        Self::new(ctx, vertices)
+        Self::new(vertices)
     }
 
-    pub fn get_projection(&mut self, ctx: &Context) -> GameResult<&Mesh> {
+    pub fn get_projection(&mut self, ctx: &Context) -> GameResult<&Option<Mesh>> {
         if (self.update_projection_if_not_visible || self.visible) && self.vertices_changed {
-            self.projection = Self::default_projection(ctx, &self.vertices)?;
+            self.projection = Some(Self::debug_projection(ctx, &self.vertices)?);
             self.vertices_changed = false;
         }
         Ok(&self.projection)
@@ -118,7 +110,7 @@ impl Triangle {
         )
     }
 
-    fn default_projection(ctx: &Context, vertices: &[Vec3; 3]) -> GameResult<Mesh> {
+    fn debug_projection(ctx: &Context, vertices: &[Vec3; 3]) -> GameResult<Mesh> {
         Mesh::new_polygon(
             ctx,
             DrawMode::stroke(4.0),

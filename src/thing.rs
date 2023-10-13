@@ -31,7 +31,7 @@ pub struct Thing {
     rotation_input: Rotation,
 }
 impl Thing {
-    pub fn new(ctx: &Context) -> GameResult<Self> {
+    pub fn new(ctx: &Context) -> Self {
         let screen_size = ctx.gfx.window().inner_size();
 
         #[allow(clippy::cast_precision_loss)]
@@ -42,17 +42,16 @@ impl Thing {
         let v2 = vec3(-1.0, -1.0, 1.0) * height / 4.0;
         let v3 = vec3(-1.0, 1.0, -1.0) * height / 4.0;
         let v4 = vec3(1.0, -1.0, -1.0) * height / 4.0;
-        shape.push_triangle(ctx, [v1, v2, v4])?;
-        shape.push_triangle(ctx, [v1, v3, v2])?;
-        shape.push_triangle(ctx, [v2, v3, v4])?;
-        shape.push_triangle(ctx, [v1, v4, v3])?;
-        
+        shape.push_triangle([v1, v2, v4]);
+        shape.push_triangle([v1, v3, v2]);
+        shape.push_triangle([v2, v3, v4]);
+        shape.push_triangle([v1, v4, v3]);
 
-        Ok(Self {
+        Self {
             shape,
             direction_input: Direction::default(),
             rotation_input: Rotation::default(),
-        })
+        }
     }
 
     fn input_vector(&self) -> Vec2 {
@@ -90,7 +89,10 @@ impl ggez::event::EventHandler for Thing {
 
         for triangle in &mut self.shape.triangles {
             if triangle.is_visible() {
-                canvas.draw(triangle.get_projection(ctx)?, origin);
+                // if let triangle = &triangle.get_projection(ctx)?;
+                if let Some(triangle) = triangle.get_projection(ctx)? {
+                    canvas.draw(triangle, origin);
+                }
             }
         }
 
