@@ -9,19 +9,17 @@ use ggez::{
 pub struct Triangle {
     vertices: [Vec3; 3],
     vertices_changed: bool,
-    origin: Vec3,
     projection: Mesh,
     visible: bool,
     pub update_projection_if_not_visible: bool,
 }
 impl Triangle {
-    pub fn new(ctx: &Context, origin: Vec3, vertices: [Vec3; 3]) -> GameResult<Self> {
+    pub fn new(ctx: &Context, vertices: [Vec3; 3]) -> GameResult<Self> {
         let projection = Self::default_projection(ctx, &vertices)?;
 
         Ok(Self {
             vertices,
             vertices_changed: false,
-            origin,
             projection,
             visible: Self::determinant(&vertices) > 0.0,
             update_projection_if_not_visible: false,
@@ -41,10 +39,10 @@ impl Triangle {
 
         let vertices = [v1, v2, v3];
 
-        Self::new(ctx, origin, vertices)
+        Self::new(ctx, vertices)
     }
 
-    pub fn equilateral(ctx: &Context, origin: Vec3, height: f32) -> GameResult<Self> {
+    pub fn equilateral(ctx: &Context, height: f32) -> GameResult<Self> {
         let rotator_ish = Vec2::from_angle(TAU / 3.0);
 
         let v1 = vec2(0.0, 1.0) * height * 2.0 / 3.0;
@@ -53,7 +51,7 @@ impl Triangle {
 
         let vertices = [v1.extend(0.0), v2.extend(0.0), v3.extend(0.0)];
 
-        Self::new(ctx, origin, vertices)
+        Self::new(ctx, vertices)
     }
 
     pub fn get_projection(&mut self, ctx: &Context) -> GameResult<&Mesh> {
@@ -64,16 +62,8 @@ impl Triangle {
         Ok(&self.projection)
     }
 
-    pub const fn get_origin(&self) -> Vec3 {
-        self.origin
-    }
-
     pub const fn is_visible(&self) -> bool {
         self.visible
-    }
-
-    pub fn translate(&mut self, vector: Vec3) {
-        self.origin += vector;
     }
 
     // TODO: this is temporary, let's do a rotator and a proper pitch/yaw/roll, also matrices

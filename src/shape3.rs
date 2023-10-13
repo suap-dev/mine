@@ -20,7 +20,7 @@ impl Shape {
 
     pub fn push_triangle(&mut self, ctx: &Context, vertices: [Vec3; 3]) -> GameResult {
         self.triangles
-            .push(Triangle::new(ctx, self.origin, vertices)?);
+            .push(Triangle::new(ctx, vertices)?);
         Ok(())
     }
 
