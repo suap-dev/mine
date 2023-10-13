@@ -12,7 +12,7 @@ pub struct Triangle {
     origin: Vec3,
     projection: Mesh,
     visible: bool,
-    update_projection_if_not_visible: bool,
+    pub update_projection_if_not_visible: bool,
 }
 impl Triangle {
     pub fn from_screen_coords(
@@ -28,7 +28,7 @@ impl Triangle {
         let v3 = v3 - origin;
         let vertices = [v1, v2, v3];
 
-        let projection = Self::generate_projection(ctx, &vertices)?;
+        let projection = Self::default_projection(ctx, &vertices)?;
 
         let visible = Self::determinant(&vertices) > 0.0;
 
@@ -51,7 +51,7 @@ impl Triangle {
 
         let vertices = [v1.extend(0.0), v2.extend(0.0), v3.extend(0.0)];
 
-        let projection = Self::generate_projection(ctx, &vertices)?;
+        let projection = Self::default_projection(ctx, &vertices)?;
 
         let visible = Self::determinant(&vertices) > 0.0;
 
@@ -67,7 +67,7 @@ impl Triangle {
 
     pub fn get_projection(&mut self, ctx: &Context) -> GameResult<&Mesh> {
         if (self.update_projection_if_not_visible || self.visible) && self.vertices_changed {
-            self.projection = Self::generate_projection(ctx, &self.vertices)?;
+            self.projection = Self::default_projection(ctx, &self.vertices)?;
             self.vertices_changed = false;
         }
         Ok(&self.projection)
@@ -87,37 +87,43 @@ impl Triangle {
 
     // TODO: this is temporary, let's do a rotator and a proper pitch/yaw/roll, also matrices
     // TODO: DRY
-    pub fn rotate_x(&mut self, angle: f32) {
-        let rotator_ish = Vec2::from_angle(angle);
-        self.vertices.iter_mut().for_each(|v| {
-            let v_rotated = rotator_ish.rotate(v.yz());
-            v.y = v_rotated.x;
-            v.z = v_rotated.y;
-        });
-        self.visible = Self::determinant(&self.vertices) > 0.0;
-        self.vertices_changed = true;
+    pub fn add_pitch(&mut self, angle: f32) {
+        if angle != 0.0 {
+            let rotator_ish = Vec2::from_angle(angle);
+            self.vertices.iter_mut().for_each(|v| {
+                let v_rotated = rotator_ish.rotate(v.yz());
+                v.y = v_rotated.x;
+                v.z = v_rotated.y;
+            });
+            self.visible = Self::determinant(&self.vertices) > 0.0;
+            self.vertices_changed = true;
+        }
     }
 
-    pub fn rotate_y(&mut self, angle: f32) {
-        let rotator_ish = Vec2::from_angle(angle);
-        self.vertices.iter_mut().for_each(|v| {
-            let v_rotated = rotator_ish.rotate(v.xz());
-            v.x = v_rotated.x;
-            v.z = v_rotated.y;
-        });
-        self.visible = Self::determinant(&self.vertices) > 0.0;
-        self.vertices_changed = true;
+    pub fn add_yaw(&mut self, angle: f32) {
+        if angle != 0.0 {
+            let rotator_ish = Vec2::from_angle(angle);
+            self.vertices.iter_mut().for_each(|v| {
+                let v_rotated = rotator_ish.rotate(v.xz());
+                v.x = v_rotated.x;
+                v.z = v_rotated.y;
+            });
+            self.visible = Self::determinant(&self.vertices) > 0.0;
+            self.vertices_changed = true;
+        }
     }
 
-    pub fn rotate_z(&mut self, angle: f32) {
-        let rotator_ish = Vec2::from_angle(angle);
-        self.vertices.iter_mut().for_each(|v| {
-            let v_rotated = rotator_ish.rotate(v.xy());
-            v.x = v_rotated.x;
-            v.y = v_rotated.y;
-        });
-        self.visible = Self::determinant(&self.vertices) > 0.0;
-        self.vertices_changed = true;
+    pub fn add_roll(&mut self, angle: f32) {
+        if angle != 0.0 {
+            let rotator_ish = Vec2::from_angle(angle);
+            self.vertices.iter_mut().for_each(|v| {
+                let v_rotated = rotator_ish.rotate(v.xy());
+                v.x = v_rotated.x;
+                v.y = v_rotated.y;
+            });
+            self.visible = Self::determinant(&self.vertices) > 0.0;
+            self.vertices_changed = true;
+        }
     }
 
     fn truncate(vertices: &[Vec3; 3]) -> [Vec2; 3] {
@@ -131,12 +137,12 @@ impl Triangle {
         )
     }
 
-    fn generate_projection(ctx: &Context, vertices: &[Vec3; 3]) -> GameResult<Mesh> {
+    fn default_projection(ctx: &Context, vertices: &[Vec3; 3],) -> GameResult<Mesh> {
         Mesh::new_polygon(
             ctx,
-            DrawMode::stroke(3.0),
+            DrawMode::stroke(4.0),
             &Self::truncate(vertices),
-            Color::BLUE,
+            Color::WHITE,
         )
     }
 }

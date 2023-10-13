@@ -9,16 +9,16 @@ use ggez::{
 
 use crate::triangle3::Triangle;
 
-const MOVE_SPEED: f32 = 100.0;
-const ROTATION_SPEED: f32 = TAU / 12.0;
 #[derive(Default)]
-struct DirectionInput {
+struct Direction {
     // TODO: try to do this with X and Y axis, or UP and RIGHT axis.
     up: f32,
     down: f32,
     left: f32,
     right: f32,
 }
+
+#[derive(Default)]
 struct Rotation {
     pitch: f32,
     yaw: f32,
@@ -27,7 +27,8 @@ struct Rotation {
 
 pub struct Thing {
     triangle: Triangle,
-    direction_input: DirectionInput,
+    direction_input: Direction,
+    rotation_input: Rotation,
 }
 impl Thing {
     pub fn new(ctx: &Context) -> GameResult<Self> {
@@ -36,13 +37,15 @@ impl Thing {
         let height = screen_size.height as f32;
         let width = screen_size.width as f32;
 
-        let triangle =
+        let mut triangle =
             Triangle::equilateral(ctx, vec3(width / 2.0, height / 2.0, 0.0), height / 3.0)?;
+        triangle.update_projection_if_not_visible = true;
 
         Ok(Self {
             triangle,
             // mesh_position: circle_position,
-            direction_input: DirectionInput::default(),
+            direction_input: Direction::default(),
+            rotation_input: Rotation::default(),
         })
     }
 
@@ -55,10 +58,21 @@ impl Thing {
 }
 impl ggez::event::EventHandler for Thing {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
+        const MOVE_SPEED: f32 = 500.0;
+        const ROTATION_SPEED: f32 = TAU / 3.0;
+
         let dt32 = ctx.time.delta().as_secs_f32();
+
         let movement_vector = self.input_vector().extend(0.0) * MOVE_SPEED * dt32;
         self.triangle.translate(movement_vector);
-        self.triangle.rotate_x(ROTATION_SPEED * dt32);
+
+        self.triangle
+            .add_pitch(ROTATION_SPEED * dt32 * self.rotation_input.pitch);
+        self.triangle
+            .add_roll(ROTATION_SPEED * dt32 * self.rotation_input.roll);
+        self.triangle
+            .add_yaw(ROTATION_SPEED * dt32 * self.rotation_input.yaw);
+
         Ok(())
     }
 
@@ -89,9 +103,9 @@ impl ggez::event::EventHandler for Thing {
         }
 
         match input.keycode {
-            Some(VirtualKeyCode::Z) => println!("z"),
-            Some(VirtualKeyCode::X) => println!("x"),
-            Some(VirtualKeyCode::C) => println!("c"),
+            Some(VirtualKeyCode::R) => self.rotation_input.roll = 1.0,
+            Some(VirtualKeyCode::F) => self.rotation_input.yaw = 1.0,
+            Some(VirtualKeyCode::V) => self.rotation_input.pitch = 1.0,
             _ => (),
         }
 
@@ -111,6 +125,14 @@ impl ggez::event::EventHandler for Thing {
 
             _ => (),
         }
+
+        match input.keycode {
+            Some(VirtualKeyCode::R) => self.rotation_input.roll = 0.0,
+            Some(VirtualKeyCode::F) => self.rotation_input.yaw = 0.0,
+            Some(VirtualKeyCode::V) => self.rotation_input.pitch = 0.0,
+            _ => (),
+        }
+
         Ok(())
     }
 }
