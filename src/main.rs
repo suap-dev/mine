@@ -2,6 +2,7 @@
 
 mod thing;
 mod triangle3;
+mod shape3;
 
 use ggez::GameResult;
 use thing::Thing;
