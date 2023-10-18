@@ -1,13 +1,8 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
-mod shape3;
-mod thing;
-mod triangle3;
+use mine::Thing;
 
-use ggez::GameResult;
-use thing::Thing;
-
-fn main() -> GameResult {
+fn main() -> ggez::GameResult {
     let (context, event_loop) = {
         let window_setup = ggez::conf::WindowSetup::default()
             .title("Thing")

@@ -1,6 +1,6 @@
 use ggez::glam::Vec3;
 
-use crate::triangle3::Triangle;
+use crate::spatial::Triangle;
 
 pub struct Shape {
     origin: Vec3,

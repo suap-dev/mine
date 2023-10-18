@@ -1,5 +1,6 @@
-use std::f32::consts::TAU;
+mod spatial;
 
+use std::f32::consts::TAU;
 use ggez::{
     glam::{vec2, vec3, Vec2, Vec3},
     graphics::{self, Color},
@@ -7,7 +8,7 @@ use ggez::{
     Context, GameResult,
 };
 
-use crate::shape3::Shape;
+use crate::spatial::Shape;
 
 #[derive(Default)]
 struct Direction {
